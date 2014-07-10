@@ -31,12 +31,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       rs.ssh_username = "ubuntu"
       rs.availability_zone = "az3"
       # Security Groups defaults to ["default"]
-      rs.security_groups = ["default", "webserver"]
+      rs.security_groups = ["default", "ssh"]
     end
 
     mininet.vm.provision "puppet" do |puppet|
-      #puppet.hiera_config_path = "resources/puppet/hiera.yaml"
-      #puppet.working_directory = "/vagrant/resources/puppet"
       puppet.manifests_path = "resources/puppet/manifests"
       puppet.manifest_file  = "mininet.pp"
     end
@@ -57,16 +55,39 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       rs.ssh_username = "ubuntu"
       rs.availability_zone = "az3"
       # Security Groups defaults to ["default"]
-      rs.security_groups = ["default", "webserver"]
+      rs.security_groups = ["default", "ssh", "webserver" ]
     end
 
     dsctl.vm.provision "puppet" do |puppet|
-      #puppet.hiera_config_path = "resources/puppet/hiera.yaml"
-      #puppet.working_directory = "/vagrant/resources/puppet"
       puppet.manifests_path = "resources/puppet/manifests"
       puppet.manifest_file  = "devstack-control.pp"
     end
   end
+
+  config.vm.define "devstack-compute" do |dscomp|
+    dscomp.vm.hostname = "devstack-compute"
+    dscomp.vm.provider :hp do |rs|
+      rs.access_key = "#{ENV['OS_ACCESS_KEY']}"
+      rs.secret_key = "#{ENV['OS_SECRET_KEY']}"
+      rs.flavor   = "standard.small"
+      rs.tenant_id = "#{ENV['OS_TENANT_ID']}"
+      rs.server_name = "devstack-compute"
+      # Ubuntu Server 14.04 LTS
+      rs.image    = "ca2e362c-62c9-4c0d-82a6-5d6a37fcb251"
+      rs.keypair_name = "#{ENV['OS_KEYPAIR_NAME']}"
+      rs.ssh_private_key_path = "~/.ssh/id_rsa"
+      rs.ssh_username = "ubuntu"
+      rs.availability_zone = "az3"
+      # Security Groups defaults to ["default"]
+      rs.security_groups = ["default", "ssh"]
+    end
+
+    dscomp.vm.provision "puppet" do |puppet|
+      puppet.manifests_path = "resources/puppet/manifests"
+      puppet.manifest_file  = "devstack-compute.pp"
+    end
+  end
+
 
 
 
